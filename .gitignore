@@ -4,7 +4,6 @@
 
 # Gradle
 .gradle
-gradlew.bat
 build/
 local.properties
 reports
@@ -24,4 +23,6 @@ bin
 .project
 .settings
 
-duktape/src/main/jni/quickjs/
+.env
+*.bak
+quack-jni/src/main/resources/META-INF/quickjs.*
