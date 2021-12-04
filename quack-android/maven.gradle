@@ -1,0 +1,38 @@
+apply plugin: 'maven-publish'
+
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                name = "github"
+                url = maven.url
+                credentials {
+                    username = maven.username
+                    password = maven.password
+                }
+            }
+        }
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                groupId = maven.groupId
+                version = maven.version
+                artifactId = 'quack-android'
+
+                // Applies the component for the release build variant.
+                from components.release
+            }
+            // Creates a Maven publication called "debug".
+            debug(MavenPublication) {
+                groupId = maven.groupId
+                version = maven.version
+                artifactId = 'quack-android-debug'
+
+                // Applies the component for the debug build variant.
+                from components.debug
+            }
+        }
+    }
+}

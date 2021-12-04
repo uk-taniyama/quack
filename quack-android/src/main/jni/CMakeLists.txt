@@ -1,38 +1,22 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-file(GLOB common_SRC
-    "../../../../quack-jni/src/main/jni/*.h"
-    "../../../../quack-jni/src/main/jni/*.cpp"
-)
-file(GLOB_RECURSE duktape_SRC
-    "../../../../quack-jni/src/main/jni/duktape-jni/*.h"
-    "../../../../quack-jni/src/main/jni/duktape-jni/*.c"
-    "../../../../quack-jni/src/main/jni/duktape-jni/*.cpp"
-
-    "../../../../quack-jni/src/main/jni/duktape/*.h"
-    "../../../../quack-jni/src/main/jni/duktape/*.c"
-    "../../../../quack-jni/src/main/jni/duktape/*.cpp"
-)
-
-add_definitions(-DCONFIG_VERSION="2019-10-27")
+add_definitions(-DCONFIG_VERSION="2021-03-27")
 add_definitions(-DCONFIG_DISABLE_STACK_CHECK)
 add_definitions(-DCONFIG_DISABLE_WORKER)
 
 file(GLOB quickjs_SRC
-    "../../../../quack-jni/src/main/jni/quickjs-jni/*.h"
-    "../../../../quack-jni/src/main/jni/quickjs-jni/*.c"
-    "../../../../quack-jni/src/main/jni/quickjs-jni/*.cpp"
-    "../../../../../../quickjs/*.h"
-    "../../../../../quickjs/quickjs.c"
-    "../../../../../quickjs/libbf.c"
-    "../../../../../quickjs/quickjs-libc.c"
-    "../../../../../quickjs/quickjs-debugger.c"
-    "../../../../../quickjs/quickjs-debugger-transport-unix.c"
-    "../../../../../quickjs/libunicode.c"
-    "../../../../../quickjs/libregexp.c"
-    "../../../../../quickjs/cutils.c"
+    "../../../../native/quickjs/*.h"
+    "../../../../native/quickjs/*.cpp"
+    "../../../../native/quickjs/quickjs.c"
+    "../../../../native/quickjs/libbf.c"
+    "../../../../native/quickjs/quickjs-libc.c"
+    "../../../../native/quickjs/libunicode.c"
+    "../../../../native/quickjs/libregexp.c"
+    "../../../../native/quickjs/cutils.c"
+    "../../../../native/quickjs/quickjs-debugger.c"
+    "../../../../native/quickjs/quickjs-debugger-transport-unix.c"
 )
 
-add_library(quack SHARED ${common_SRC} ${quickjs_SRC} ${duktape_SRC})
+add_library(quack SHARED ${quickjs_SRC})
 
 target_link_libraries(quack)

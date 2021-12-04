@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
+add_definitions(-DCONFIG_VERSION="2021-03-27")
+
 set(CMAKE_CXX_STANDARD 11)
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -51,7 +53,6 @@ file(GLOB quickjs_NIX_SRC
   "quickjs/quickjs-debugger-transport-unix.c"
 )
 
-add_definitions(-DCONFIG_VERSION="2021-03-27")
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   add_definitions(-D_WIN32_WINNT=0x0600)
@@ -78,4 +79,4 @@ endif()
 
 set_target_properties(quickjs
           PROPERTIES
-          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../src/main/resources/META-INF")
+          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../quack-jni/src/main/resources/META-INF")

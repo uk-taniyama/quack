@@ -1,0 +1,28 @@
+apply plugin: 'maven-publish'
+
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                name = "github"
+                url = maven.url
+                credentials {
+                    username = maven.username
+                    password = maven.password
+                }
+            }
+        }
+        publications {
+            relocation(MavenPublication) {
+                groupId = maven.groupId
+                version = maven.version
+                artifactId = 'quack-jni'
+
+                from components.java
+                artifact sourcesJar
+            }
+        }
+    }
+}

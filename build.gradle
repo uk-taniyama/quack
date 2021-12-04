@@ -1,0 +1,38 @@
+buildscript {
+    ext {
+        props = new Properties()
+        props.load(file('local.properties').newDataInputStream())
+        env = System.getenv()
+        getValue = { name, value=null ->
+            v = env[name]
+            return v != null ? v : props.getProperty(name, value)
+        }
+        maven = [
+            url: 'https://maven.pkg.github.com/uk-taniyama/maven',
+            username: 'uk-taniyama',
+            password: getValue("maven_password"),
+            groupId: 'com.koushikdutta.quack',
+            version: '1.0.0-2',
+        ]
+        versions = [
+            code: 1,
+            name: '1.0.0.2',
+            kotlin: "1.5.31",
+            androidGradle: "7.0.3",
+            junit: "4.13.2",
+        ]
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    //https://mvnrepository.com/
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+        classpath "com.android.tools.build:gradle:${versions.androidGradle}"
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
