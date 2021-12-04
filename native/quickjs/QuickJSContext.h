@@ -2,6 +2,7 @@
 #define QUICKJS_CONTEXT_H
 
 #include <jni.h>
+#include <string>
 #include <list>
 #include "quickjs.h"
 #include "JSContext.h"
