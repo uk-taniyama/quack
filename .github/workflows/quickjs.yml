@@ -10,11 +10,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       name: Checkout project
-    # - uses: actions/setup-java@v1
-    #   with:
-    #     java-version: 11
-    #     java-package: jdk
-    #     architecture: x64
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 11
+        java-package: jdk
+        architecture: x64
     - uses: msys2/setup-msys2@v2
       with:
         msystem: mingw64
@@ -26,10 +26,11 @@ jobs:
     - name: Build
       shell: msys2 {0}
       run: sh native/build.sh
-    # - name: Test
-    #   run: |
-    #      mvn --no-transfer-progress -q -B -DskipTests package
-    #      mvn --no-transfer-progress test
+    - name: Test
+      shell: msys2 {0}
+      run: |
+        touch local.properties
+        sh gradlew quack-java:test
     - name: Archive library
       uses: actions/upload-artifact@v2
       with:
@@ -49,10 +50,10 @@ jobs:
         architecture: x64
     - name: Build
       run: sh native/build.sh
-    # - name: Test
-    #   run: |
-    #      mvn --no-transfer-progress -q -B -DskipTests package
-    #      mvn --no-transfer-progress test
+    - name: Test
+      run: |
+        touch local.properties
+        sh gradlew quack-java:test
     - name: Archive library
       uses: actions/upload-artifact@v2
       with:
@@ -60,6 +61,7 @@ jobs:
         path: quack-jni/src/main/resources/META-INF/libquickjs.dylib
   linux:
     name: linux
+    # runs-on: ubuntu-16.04
     runs-on: ubuntu-latest
     if: "contains(toJSON(github.event.commits.*.message), '[build linux]')"
     steps:
@@ -72,19 +74,10 @@ jobs:
         architecture: x64
     - name: Build
       run: bash native/build.sh
-      # run: |
-      #    mkdir -p src/main/resources/META-INF
-      #    cd native
-      #    mkdir build
-      #    cd build
-      #    cmake .. -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_BUILD_TYPE=Release
-      #    make
-      #    ldd libquickjs.so
-      #    cp libquickjs.so ../../src/main/resources/META-INF
-    # - name: Java Assemble
-    #   run: |
-    #      mvn --no-transfer-progress -q -B -DskipTests package
-    #      mvn --no-transfer-progress test
+    - name: Test
+      run: |
+        touch local.properties
+        bash gradlew quack-java:test
     - name: Archive library
       uses: actions/upload-artifact@v2
       with:
@@ -97,7 +90,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: actions
-
     steps:
     - uses: actions/checkout@v2
     - name: set up JDK 11
@@ -119,11 +111,9 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: quickjs-macos
-    - name: Create local.properties
-      run: touch local.properties
-    - name: Show env
-      run: env | sort
     - name: Build with Gradle
       env:
         maven_password: ${{secrets.MAVEN_PASSWORD}}
-      run: sh gradlew publish
+      run: |
+        touch local.properties
+        bash gradlew publish
