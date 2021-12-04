@@ -1,0 +1,4 @@
+#ifndef __QUICKJS_CONFIG_H
+#define __QUICKJS_CONFIG_H
+
+#endif	// __QUICKJS_CONFIG_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Koushik Dutta
+ * Copyright (C) 2015 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public final class QuackException extends RuntimeException {
    */
   private static final long serialVersionUID = 1538523787401076917L;
   /**
-   * Duktape stack trace strings have multiple lines of the format " at func
+   * QuickJS stack trace strings have multiple lines of the format " at func
    * (file.ext:line)". "func" is optional, but we'll omit frames without a
    * function, since it means the frame is in native code.
    */
@@ -53,7 +53,7 @@ public final class QuackException extends RuntimeException {
     // We have a stacktrace following the message.  Add it to the exception.
     List<StackTraceElement> elements = new ArrayList<>();
 
-    // Splice the JavaScript stack in right above the call to Duktape.evaluate.
+    // Splice the JavaScript stack in right above the call to QuickJS.evaluate.
     StackTraceElement[] selfTrace = new Exception().getStackTrace();
 
     // depending on the platform, the exception trace may add the stack all the way up to the
@@ -84,10 +84,10 @@ public final class QuackException extends RuntimeException {
     detailMessage = parts[1];
     StringBuilder ret = new StringBuilder(parts[0]);
 
-    // Splice the JavaScript stack in right above the call to Duktape.evaluate.
+    // Splice the JavaScript stack in right above the call to QuickJS.evaluate.
     StackTraceElement[] selfTrace = new Exception().getStackTrace();
 
-    // Splice the JavaScript stack in right above the call to Duktape.evaluate.
+    // Splice the JavaScript stack in right above the call to QuickJS.evaluate.
     // depending on the platform, the exception tracem ay add the stack all the way up to the
     // exception constructor (meaning, this method, and the <init> call).
     StackTraceElement search0 = selfTrace[0];

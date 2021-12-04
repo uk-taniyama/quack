@@ -35,13 +35,13 @@ public class StreamUtility {
         }
     }
 
-	public static void copyStream(InputStream input, OutputStream output) throws IOException
-	{
-	    final ReadableByteChannel inputChannel = Channels.newChannel(input);
-	    final WritableByteChannel outputChannel = Channels.newChannel(output);
-	    // copy the channels
-	    fastChannelCopy(inputChannel, outputChannel);
-	}
+    public static void copyStream(InputStream input, OutputStream output) throws IOException
+    {
+        final ReadableByteChannel inputChannel = Channels.newChannel(input);
+        final WritableByteChannel outputChannel = Channels.newChannel(output);
+        // copy the channels
+        fastChannelCopy(inputChannel, outputChannel);
+    }
 
     public static byte[] readToEndAsArray(InputStream input) throws IOException
     {
@@ -57,10 +57,10 @@ public class StreamUtility {
         return buff.toByteArray();
     }
     
-	public static String readToEnd(InputStream input) throws IOException
-	{
-	    return new String(readToEndAsArray(input));
-	}
+    public static String readToEnd(InputStream input) throws IOException
+    {
+        return new String(readToEndAsArray(input));
+    }
 
     static public String readFile(String filename) throws IOException {
         return readFile(new File(filename));

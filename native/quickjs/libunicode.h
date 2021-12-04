@@ -40,6 +40,7 @@ typedef enum {
     UNICODE_NFKD,
 } UnicodeNormalizationEnum;
 
+int lre_case_conv_turkish(uint32_t *res, uint32_t c, int conv_type);
 int lre_case_conv(uint32_t *res, uint32_t c, int conv_type);
 LRE_BOOL lre_is_cased(uint32_t c);
 LRE_BOOL lre_is_case_ignorable(uint32_t c);

@@ -48,6 +48,24 @@ enum {
     RUN_TYPE_U_EXT3,
 };
 
+int lre_case_conv_turkish(uint32_t *res, uint32_t c, int conv_type)
+{
+  if (c == 105 && conv_type == 0) {
+    res[0] = 304;
+    return 1;
+  } else if (c == 305 && conv_type == 0) {
+    res[0] = 73;
+    return 1;
+  } else if (c == 73 && conv_type == 1) {
+    res[0] = 305;
+    return 1;
+  } else if (c == 304 && conv_type == 1) {
+    res[0] = 105;
+    return 1;
+  }
+  return lre_case_conv(res, c, conv_type);
+}
+
 /* conv_type:
    0 = to upper 
    1 = to lower
@@ -55,17 +73,6 @@ enum {
 */
 int lre_case_conv(uint32_t *res, uint32_t c, int conv_type)
 {
-    if (c < 128) {
-        if (conv_type) {
-            if (c >= 'A' && c <= 'Z') {
-                c = c - 'A' + 'a';
-            }
-        } else {
-            if (c >= 'a' && c <= 'z') {
-                c = c - 'a' + 'A';
-            }
-        }
-    } else {
         uint32_t v, code, data, type, len, a, is_lower;
         int idx, idx_min, idx_max;
         
@@ -152,7 +159,6 @@ int lre_case_conv(uint32_t *res, uint32_t c, int conv_type)
                 break;
             }
         }
-    }
     res[0] = c;
     return 1;
 }

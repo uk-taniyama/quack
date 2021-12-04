@@ -23,6 +23,7 @@ public class WeakExactHashMap<K, V> {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean equals(Object obj) {
             Entry<K> other = (Entry<K>)obj;
             K key = this.key.get();
@@ -42,8 +43,7 @@ public class WeakExactHashMap<K, V> {
         purge();
     }
 
-    public int purge() {
-        int before = map.size();
+    public void purge() {
         Iterator<Entry<K>> iter = map.keySet().iterator();
         while (iter.hasNext()) {
             Entry<K> entry = iter.next();
@@ -53,7 +53,6 @@ public class WeakExactHashMap<K, V> {
         int after = map.size();
 //        int purged = before - after;
         setPurgeThreshold(after * 2);
-        return before - after;
     }
 
     public V get(K key) {

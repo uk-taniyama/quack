@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Koushik Dutta
+ * Copyright (C) 2015 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,29 @@
  */
 package com.koushikdutta.quack;
 
+import static java.lang.System.getProperty;
+import static java.nio.file.Files.copy;
+import static java.nio.file.Files.createDirectory;
+import static java.nio.file.Files.createFile;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Paths.get;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.util.Locale.ENGLISH;
+
 import java.io.Closeable;
-import java.lang.reflect.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,12 +57,48 @@ public final class QuackContext implements Closeable {
   final Map<Method, QuackMethodCoercion> JavaToJavascriptMethodCoercions = new LinkedHashMap<>();
   private QuackInvocationHandlerWrapper invocationHandlerWrapper;
 
+  private static boolean loaded = false;
+
+  private static final String OS_NAME = getProperty("os.name").toLowerCase(ENGLISH);
+
+  // temporary directory location
+  private static final Path tmpdir = get(getProperty("java.io.tmpdir")).toAbsolutePath();
+
+  private static final boolean WINDOWS = OS_NAME.startsWith("windows");
+
+  private static final boolean MAC = OS_NAME.contains("mac");
+
+  private static final String version = "1.1.0";
+
   static {
-    try {
-      System.loadLibrary("quack");
-    }
-    catch (UnsatisfiedLinkError err) {
-    }
+      loadJni();
+  }
+
+  public static synchronized boolean loadJni() {
+      if (loaded) {
+          return true;
+      }
+      ClassLoader cl = QuackContext.class.getClassLoader();
+      String name = WINDOWS ? "quickjs.dll" : MAC ? "libquickjs.dylib" : "libquickjs.so";
+      Path libFile = tmpdir.resolve("quickjs-" + version).resolve(name);
+      if (!exists(libFile)) {
+          try (InputStream is = cl.getResourceAsStream("META-INF/" + name)) {
+              if (is == null) {
+                  throw new RuntimeException("resource not found: META-INF/" + name);
+              }
+              if (!exists(libFile.getParent())) {
+                  createDirectory(libFile.getParent());
+              }
+              if (!exists(libFile)) {
+                  createFile(libFile);
+              }
+              copy(is, libFile, REPLACE_EXISTING);
+          } catch (IOException e) {
+              throw new RuntimeException(e);
+          }
+      }
+      System.load(libFile.toString());
+      return loaded = true;
   }
 
   static boolean isEmpty(String str) {
@@ -92,7 +148,7 @@ public final class QuackContext implements Closeable {
 
   /**
    * Register a function that coerces Java values of type {@code clazz} into a JavaScript object
-   * before being passed along to Duktape.
+   * before being passed along to QuickJS.
    * @param clazz
    * @param coercion
    * @param <F>
@@ -442,7 +498,7 @@ public final class QuackContext implements Closeable {
     // context will hold a weak ref, so this doesn't matter if it fails.
     long context = createContext(quack, useQuickJS);
     if (context == 0) {
-      throw new OutOfMemoryError("Cannot create Duktape instance");
+      throw new OutOfMemoryError("Cannot create QuickJS instance");
     }
     quack.context = context;
     quack.useQuickJS = useQuickJS;
@@ -506,7 +562,7 @@ public final class QuackContext implements Closeable {
         return o;
 
       ByteBuffer direct = ByteBuffer.allocateDirect(o.remaining());
-      direct.put(o.duplicate());
+      direct.put(o);
       direct.flip();
       return direct;
     });
@@ -641,9 +697,9 @@ public final class QuackContext implements Closeable {
 
   @Override protected synchronized void finalize() throws Throwable {
     // this isn't THAT bad, as JavaScriptObjects may be passed around without concern for the
-    // Duktape collection.
+    // QuickJS collection.
     if (context != 0) {
-      Logger.getLogger(getClass().getName()).warning("Duktape instance leaked!");
+      Logger.getLogger(getClass().getName()).warning("QuickJS instance leaked!");
     }
     // definitely close it though.
     close();
@@ -656,7 +712,7 @@ public final class QuackContext implements Closeable {
   /**
    * Notify any attached debugger to process pending any debugging requests. When
    * cooperateDebuger is invoked by the caller, the caller must ensure no calls into
-   * the Duktape during that time.
+   * the QuickJS during that time.
    */
   public synchronized void cooperateDebugger() {
     if (context == 0)
@@ -860,11 +916,8 @@ public final class QuackContext implements Closeable {
     runJobs(context);
   }
   private Executor jobExecutor;
-  public void setJobExecutor(Executor executor) {
+  synchronized public void setJobExecutor(Executor executor) {
     jobExecutor = executor;
-  }
-  public Executor getJobExecutor() {
-    return jobExecutor;
   }
 
   // hooks from js/jni to java
@@ -884,33 +937,16 @@ public final class QuackContext implements Closeable {
   private Object quackConstruct(QuackObject quackObject, Object... args) {
     return quackObject.construct(args == null ? empty : args);
   }
-  synchronized public void quackMapNative(Object key, Object value) {
+  public void quackMapNative(Object key, Object value) {
     nativeMappings.put(key, value);
   }
   public Object quackUnmapNative(Object key) {
     return nativeMappings.get(key);
   }
-  synchronized public int purgeNativeMappings() {
-    return nativeMappings.purge();
-  }
-  synchronized public int getMappedNativeCount() {
-    return nativeMappings.size();
-  }
   private long getNativePointer(QuackJavaScriptObject quackJavaScriptObject) {
     if (quackJavaScriptObject.getNativeContext() != context)
       return 0;
     return quackJavaScriptObject.getNativePointer();
-  }
-
-  public void gc() {
-    for (int i = 0; i < 2; i++) {
-      System.gc();
-      System.gc();
-      finalizeJavaScriptObjects();
-      System.gc();
-      System.gc();
-      purgeNativeMappings();
-    }
   }
 
   private static native long getHeapSize(long context);

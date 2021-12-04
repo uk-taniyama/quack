@@ -37,6 +37,7 @@ public class JSValue implements QuackJavaObject {
         return value == null;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T as(Class<T> clazz) {
         return (T)quack.coerceJavaScriptToJava(clazz, value);
     }
