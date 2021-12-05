@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import static org.junit.Assume.assumeFalse;
 
 public class TestQuack {
     private static boolean useQuickJS = true;
@@ -772,6 +773,7 @@ public class TestQuack {
     // this fails on android, probably something to do with the class loader.
     @Test
     public void testClassCreation() throws ClassNotFoundException {
+        assumeFalse(System.getProperty("java.vm.name").equals("Dalvik"));
         String script =
                 "var Foo2 = JavaClass.forName('com.koushikdutta.quack.TestQuack$Foo2');\n" +
                         "var foo = new Foo2();\n" +

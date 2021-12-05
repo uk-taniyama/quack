@@ -1,7 +1,9 @@
 buildscript {
     ext {
         props = new Properties()
-        props.load(file('local.properties').newDataInputStream())
+        try {
+            props.load(file('local.properties').newDataInputStream())
+        } catch(Exception ignore) {}
         env = System.getenv()
         getValue = { name, value=null ->
             v = env[name]
@@ -11,8 +13,8 @@ buildscript {
             url: 'https://maven.pkg.github.com/uk-taniyama/maven',
             username: 'uk-taniyama',
             password: getValue("maven_password"),
-            groupId: 'com.koushikdutta.quack',
-            version: '1.0.0',
+            groupId: 'com.github.com.uk-taniyama',
+            version: '1.0.0-'+getValue("GITHUB_RUN_ID", "SNAPSHOT"),
         ]
         versions = [
             code: 1,
