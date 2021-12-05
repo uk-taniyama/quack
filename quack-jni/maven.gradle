@@ -6,12 +6,7 @@ afterEvaluate {
     publishing {
         repositories {
             maven {
-                name = "github"
                 url = maven.url
-                credentials {
-                    username = maven.username
-                    password = maven.password
-                }
             }
         }
         publications {
