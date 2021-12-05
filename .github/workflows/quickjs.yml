@@ -83,13 +83,10 @@ jobs:
       with:
         name: quickjs-linux
         path: quack-jni/src/main/resources/META-INF/libquickjs.so
-  publish:
-    name: publish
-    if: ${{ ! failure() && contains(toJSON(github.event.commits.*.message), '[publish]')}}
-    needs: [windows, macos, linux]
+  android:
+    name: android
+    if: "contains(toJSON(github.event.commits.*.message), '[build android]')"
     runs-on: macos-10.15
-    environment:
-      name: actions
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v2
@@ -112,25 +109,83 @@ jobs:
         api: 25
         tag: default
         abi: x86
+    - name: Assemble
+      run: sh gradlew assemble
     - name: Save logcat output
       uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: logcat
         path: artifacts/logcat.log
+    - name: Archive result
+      run: tar cvfz android.tar.gz quack-android/.cxx quack-android/build > /dev/null
+    - name: Upload result
+      uses: actions/upload-artifact@v2
+      with:
+        name: quickjs-android
+        path: android.tar.gz
+  publish:
+    name: publish
+    if: ${{ ! failure() && contains(toJSON(github.event.commits.*.message), '[publish]')}}
+    needs: [windows, macos, linux, android]
+    runs-on: macos-10.15
+    environment:
+      name: actions
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 11
+        java-package: jdk
+        architecture: x64
+        cache: gradle
     - name: Download windows library
-      uses: actions/download-artifact@v2
+      uses: dawidd6/action-download-artifact@v2
       with:
+        workflow: quickjs.yml
+        branch: master
+        event: push
+        search_artifacts: true
         name: quickjs-windows
+        path: quack-jni/src/main/resources/META-INF/
     - name: Download linux library
-      uses: actions/download-artifact@v2
+      uses: dawidd6/action-download-artifact@v2
       with:
+        workflow: quickjs.yml
+        branch: master
+        event: push
+        search_artifacts: true
         name: quickjs-linux
+        path: quack-jni/src/main/resources/META-INF/
     - name: Download macos library
-      uses: actions/download-artifact@v2
+      uses: dawidd6/action-download-artifact@v2
       with:
+        workflow: quickjs.yml
+        branch: master
+        event: push
+        search_artifacts: true
         name: quickjs-macos
+        path: quack-jni/src/main/resources/META-INF/
+    - name: Download android result
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: quickjs.yml
+        branch: master
+        event: push
+        search_artifacts: true
+        name: quickjs-android
+        path: android.tar.gz
+    - name: Expand result
+      run: tar xvfz android.tar.gz
     - name: Build with Gradle
-      env:
-        maven_password: ${{secrets.MAVEN_PASSWORD}}
       run: sh gradlew publish
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        personal_token: ${{ secrets.GH_PAGES }}
+        external_repository: uk-taniyama/maven
+        publish_branch: master
+        publish_dir: ./build/mvn
+        destination_dir: ./quack
+        keep_files: true
