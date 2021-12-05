@@ -1,0 +1,25 @@
+name: quickjs
+
+on:
+  [push]
+jobs:
+  publish:
+    name: publish
+    runs-on: macos-10.15
+    environment:
+      name: actions
+    steps:
+    - name: Generate
+      run: |
+        mkdir build
+        mkdir build/mvn
+        ls -lR > build/mvn/list.txt
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        personal_token: ${{ secrets.GH_PAGES }}
+        external_repository: uk-taniyama/maven
+        publish_branch: master
+        publish_dir: ./build/mvn
+        destination_dir: ./quack
+        keep_files: true
