@@ -11,8 +11,8 @@ android {
   dependencies {
     implementation project(':quack-java')
     testImplementation "junit:junit:${versions.junit}"
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'com.android.support.test:runner:1.4.0'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.4.0'
   }
 
   compileOptions {
