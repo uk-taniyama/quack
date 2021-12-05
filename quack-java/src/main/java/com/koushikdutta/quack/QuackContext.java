@@ -39,19 +39,10 @@ public final class QuackContext implements Closeable {
   public static Throwable error = null;
 
   static {
-    if(System.getProperty("java.vm.name").equals("Dalvik")) {
-      try {
-        System.loadLibrary("quack");
-      }
-      catch (UnsatisfiedLinkError err) {
-        error = err;
-      }
-    } else {
-      try {
-        Class.forName("com.koushikdutta.quack.QuackJniLoader");
-      } catch (ClassNotFoundException e) {
-        error = e;
-      }
+    try {
+      Class.forName("com.koushikdutta.quack.QuackJniLoader");
+    } catch (ClassNotFoundException e) {
+      error = e;
     }
   }
 
