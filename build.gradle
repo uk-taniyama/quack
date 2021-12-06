@@ -13,8 +13,8 @@ buildscript {
             url: file('build/maven').absolutePath,
             username: 'uk-taniyama',
             password: getValue("maven_password"),
-            groupId: 'com.github.com.uk-taniyama',
-            version: '1.0.0-'+getValue("GITHUB_RUN_ID", "SNAPSHOT"),
+            groupId: 'com.github.uk-taniyama.quack',
+            version: '1.0.0-SNAPSHOT',
         ]
         println(maven.url)
         versions = [

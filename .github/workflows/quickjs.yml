@@ -83,10 +83,9 @@ jobs:
       with:
         name: quickjs-linux
         path: quack-jni/src/main/resources/META-INF/libquickjs.so
-  publish:
-    name: publish
-    if: ${{ ! failure() && contains(toJSON(github.event.commits.*.message), '[publish]')}}
-    needs: [windows, macos, linux]
+  android:
+    name: android
+    if: contains(toJSON(github.event.commits.*.message), '[build android]')
     runs-on: macos-10.15
     environment:
       name: actions
@@ -118,6 +117,24 @@ jobs:
       with:
         name: logcat
         path: artifacts/logcat.log
+    - name: Build with Gradle
+      run: sh gradlew quack-android:publish
+    - name: Archive result
+      run: tar cvfz build/android.tar.gz quack-android/.cxx quack-android/build > /dev/null
+    - name: Upload result
+      uses: actions/upload-artifact@v2
+      with:
+        name: quickjs-android
+        path: build/android.tar.gz
+  publish:
+    name: publish
+    if: ${{ ! failure() && contains(toJSON(github.event.commits.*.message), '[publish]')}}
+    needs: [windows, macos, linux, android]
+    runs-on: macos-10.15
+    environment:
+      name: actions
+    steps:
+    - uses: actions/checkout@v2
     - name: Download windows library
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -145,7 +162,25 @@ jobs:
         search_artifacts: true
         name: quickjs-macos
         path: quack-jni/src/main/resources/META-INF/
-    - name: Build with Gradle
+    - name: Download android Assemble
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: quickjs.yml
+        branch: master
+        event: push
+        search_artifacts: true
+        name: quickjs-android
+        path: build/
+    - name: Extract android Assemble
+      run: tar xvfz build/android.tar.gz
+    - uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 11
+        java-package: jdk
+        architecture: x64
+        cache: gradle
+    - name: Publish
       run: sh gradlew publish
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
@@ -153,6 +188,6 @@ jobs:
         personal_token: ${{ secrets.GH_PAGES }}
         external_repository: uk-taniyama/maven
         publish_branch: master
-        publish_dir: ./build/mvn
-        destination_dir: ./quack
+        publish_dir: ./build/maven
+        destination_dir: ./repository
         keep_files: true
