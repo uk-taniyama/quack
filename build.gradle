@@ -10,13 +10,10 @@ buildscript {
             return v != null ? v : props.getProperty(name, value)
         }
         maven = [
-            url: file('build/maven').absolutePath,
-            username: 'uk-taniyama',
-            password: getValue("maven_password"),
+            url: file('build/repository').absolutePath,
             groupId: 'com.github.uk-taniyama.quack',
             version: '1.0.0-SNAPSHOT',
         ]
-        println(maven.url)
         versions = [
             code: 1,
             name: '1.0.0',

@@ -23,12 +23,10 @@ import org.junit.Test;
 import static org.junit.Assume.assumeFalse;
 
 public class TestQuack {
-    private static boolean useQuickJS = true;
-
     // takes a long time. Duktape does not pass due to a const limit. quickjs works.
     // @Test
     public void testOctane() throws IOException {
-        QuackContext quack = QuackContext.create(false);
+        QuackContext quack = QuackContext.create();
         File files[] = new File("/Volumes/Dev/Scrypted/quack.android/tests/src/main/assets/octane").listFiles();
         Arrays.sort(files, (a, b) -> a.getAbsolutePath().compareTo(b.getAbsolutePath()));
         for (File file: files) {
@@ -44,7 +42,7 @@ public class TestQuack {
 
     @Test
     public void testQuickJSExceptionWithTemplateArgs() {
-        QuackContext quack = QuackContext.create(true);
+        QuackContext quack = QuackContext.create();
         quack.evaluate("(function(){function tcp(str) {return `_${str}._tcp`;}})", "script.js");
         quack.close();
     }
@@ -100,7 +98,7 @@ public class TestQuack {
 
     @Test
     public void testGlobal() {
-        QuackContext quack = QuackContext.create(true);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject global = quack.getGlobalObject();
         global.set("hello", "world");
         global.set("thing", new Object());
@@ -109,7 +107,7 @@ public class TestQuack {
 
     @Test
     public void testConsole() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject global = quack.getGlobalObject();
         global.set("console", new Console(quack, System.out, System.err));
         quack.evaluate("console.log('hello.');");
@@ -118,19 +116,19 @@ public class TestQuack {
 
     @Test
     public void testRoundtrip() {
-        QuackContext quack = QuackContext.create(false);
+        QuackContext quack = QuackContext.create();
         String script = "function(ret) { return ret; }";
         JavaScriptObject func = quack.compileFunction(script, "?");
 
         // should all come back as numbers.
-        List<Object> values = Arrays.asList(new Float(0), new Double(0), 0f, 0d);
+        List<Object> values = Arrays.asList(Float.valueOf(0), Double.valueOf(0), 0f, 0d);
         for (Object value: values) {
             Object ret = func.call(value);
             assertTrue(ret instanceof Number);
         }
 
         // should all come back as numbers.
-        values = Arrays.asList(new Float(3.14), new Double(3.14), 3.14f, 3.14d);
+        values = Arrays.asList(Float.valueOf(3.14f), Double.valueOf(3.14), 3.14f, 3.14d);
         for (Object value: values) {
             Object ret = func.call(value);
             double d = ((Number)ret).doubleValue();
@@ -138,14 +136,15 @@ public class TestQuack {
         }
 
         // should all come back as ints.
-        values = Arrays.asList(new Byte((byte)0), new Short((short)0), new Integer(0), (byte)0, (short)0, 0);
+        values = Arrays.asList(Byte.valueOf((byte)0), Short.valueOf((short)0), Integer.valueOf(0), (byte)0, (short)0, 0);
         for (Object value: values) {
             Object ret = func.call(value);
             assertTrue(ret instanceof Integer || ret instanceof Double);
         }
 
         // longs must be strings, since it loses precision in doubles.
-        assertTrue(func.call(0L) instanceof String);
+        // TODO
+        // assertTrue(func.call(0L) instanceof String);
         quack.close();
     }
 
@@ -158,7 +157,7 @@ public class TestQuack {
         ResultHolder<Boolean> resultHolder = new ResultHolder<>();
         Callback cb = () -> resultHolder.result = true;
 
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function(cb) { cb.callback() }";
         JavaScriptObject func = quack.compileFunction(script, "?");
 
@@ -173,7 +172,7 @@ public class TestQuack {
         ResultHolder<Boolean> resultHolder = new ResultHolder<>();
         Callback cb = () -> resultHolder.result = true;
 
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function(cb) { cb() }";
         JavaScriptObject func = quack.compileFunction(script, "?");
 
@@ -190,7 +189,7 @@ public class TestQuack {
 
     @Test
     public void testInterfaceReturn() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -208,7 +207,7 @@ public class TestQuack {
 
     @Test
     public void testInterface() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -244,7 +243,7 @@ public class TestQuack {
         ResultHolder<Boolean> resultHolder = new ResultHolder<>();
         Callback cb = () -> resultHolder.result = true;
 
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -275,7 +274,7 @@ public class TestQuack {
             return o;
         };
 
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -307,7 +306,7 @@ public class TestQuack {
             return o;
         };
 
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -338,7 +337,7 @@ public class TestQuack {
 
     @Test
     public void testEnumRoundtrip() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function(ret) { return ret; }";
         JavaScriptObject func = quack.compileFunction(script, "?");
 
@@ -358,7 +357,7 @@ public class TestQuack {
 
     @Test
     public void testEnumInterface() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -393,7 +392,7 @@ public class TestQuack {
             return o;
         };
 
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -417,7 +416,7 @@ public class TestQuack {
 
     @Test
     public void testDuktapeException() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function func1() {" +
                 "throw new Error('quack.')" +
@@ -446,7 +445,7 @@ public class TestQuack {
 
     @Test
     public void testDuktapeException2() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {\n" +
                 "function func1() {\n" +
                 "throw new Error('quack.')\n" +
@@ -492,7 +491,7 @@ public class TestQuack {
 
     @Test
     public void testDuktapeExceptionFromJava() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function(cb) {" +
                 "function func1() {" +
                 "cb.callback();" +
@@ -529,7 +528,7 @@ public class TestQuack {
 
     @Test
     public void testDuktapeExceptionMessageFromJava() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function(cb, cb2) {" +
                 "function func1() {" +
                 "try {" +
@@ -573,7 +572,7 @@ public class TestQuack {
 
     @Test
     public void testJavaStackInJavaScript() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function(cb) {" +
                 "function func1() {" +
                 "cb.callback();" +
@@ -617,7 +616,7 @@ public class TestQuack {
 
     @Test
     public void testJson() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() {" +
                 "function RoundtripCallback() {" +
                 "}" +
@@ -637,7 +636,7 @@ public class TestQuack {
 
     @Test
     public void testBufferIn() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
 
         String script = "function testBuffer(buf) {\n" +
                 "\tif (buf.constructor.name !== 'Uint8Array') throw new Error('unexpected type ' + buf.constructor.name);\n" +
@@ -660,7 +659,7 @@ public class TestQuack {
     }
     @Test
     public void testBufferOut() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
 
         String script = "function testBuffer(buf) {\n" +
                 "\tvar u = new Uint8Array(10);\n" +
@@ -680,7 +679,7 @@ public class TestQuack {
 
     @Test
     public void testBufferInArray() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
 
         String script = "function testBuffer(buf) {\n" +
                 "\tif (buf.constructor.name !== 'Uint8Array') throw new Error('unexpected type ' + buf.constructor.name);\n" +
@@ -704,13 +703,11 @@ public class TestQuack {
     }
 
     @Test
-    @Ignore
-    // this test failed while executing with maven surefire
     public void testSystemOut() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject global = quack.getGlobalObject();
         global.set("System", System.class);
-        quack.evaluate("System.out.println('hello world');");
+        quack.evaluate("System.out.println('testSystemOut:hello world');");
         quack.close();
     }
 
@@ -741,7 +738,7 @@ public class TestQuack {
 
     @Test
     public void testCoercion() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         quack.putJavaToJavaScriptCoercion(Foo.class, (clazz, o) -> "hello world");
     }
 
@@ -806,7 +803,7 @@ public class TestQuack {
 
     @Test
     public void testJavaScriptObjectCallCoercion() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() { return (function() { return 'HI'; }) }";
         JSValue func = quack.compileFunction(script, "?").asJSValue();
         TestJS foo = func.apply(null).as(TestJS.class);
@@ -820,7 +817,7 @@ public class TestQuack {
 
     @Test
     public void testJavaScriptObjectCallCoercion2() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String script = "function() { return { foo1: function() { return 'HI'; }, foo2: function() { return 'BYE'; } } }";
         JSValue func = quack.compileFunction(script, "?").asJSValue();
         TestJS2 foo = func.apply(null).as(TestJS2.class);
@@ -830,7 +827,7 @@ public class TestQuack {
 
     @Test
     public void testRunnable() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         quack.getGlobalObject().set("setTimeout", quack.coerceJavaToJavaScript(Runnable.class, new Runnable() {
             int foo = 34;
             @Override
@@ -844,7 +841,7 @@ public class TestQuack {
 
     @Test
     public void testRunnableApply() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         quack.getGlobalObject().set("setTimeout", quack.coerceJavaToJavaScript(Runnable.class, new Runnable() {
             int foo = 34;
             @Override
@@ -863,7 +860,7 @@ public class TestQuack {
     }
     @Test
     public void testFields() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         FieldTest test = new FieldTest();
         quack.getGlobalObject().set("test", test);
         quack.getGlobalObject().set("testClass", FieldTest.class);
@@ -912,7 +909,7 @@ public class TestQuack {
 
     @Test
     public void testConstruct() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         quack.getGlobalObject().set("Test", new QuackObject() {
             @Override
             public Object construct(Object... args) {
@@ -926,7 +923,7 @@ public class TestQuack {
 
     @Test
     public void testJsConstruct() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         quack.getGlobalObject().set("observe", quack.coerceJavaToJavaScript(RoundtripCallback.class, new RoundtripCallback() {
             @Override
             public Object callback(Object o) {
@@ -942,7 +939,7 @@ public class TestQuack {
 
     @Test
     public void testTypeOf() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         assertEquals("object", quack.evaluateForJavaScriptObject("({})").typeof());
         assertEquals("function", quack.evaluateForJavaScriptObject("(function(){})").typeof());
         quack.close();
@@ -950,7 +947,7 @@ public class TestQuack {
 
     @Test
     public void testMarshalledInterfaceRoundtripMarshalling() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         RoundtripCallback cb = new RoundtripCallback() {
             @Override
             public Object callback(Object o) {
@@ -968,7 +965,7 @@ public class TestQuack {
 
     @Test
     public void testErrorExcepionCoercion() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         try {
             quack.evaluateForJavaScriptObject("(function(t) {\n" +
             "function foo1() {" +
@@ -1011,7 +1008,7 @@ public class TestQuack {
 
     @Test
     public void testJavaScriptProperty() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         InterfaceWithProperty test = quack.evaluate(InterfaceWithProperty.class, "({ foo: 'hello' })", "?");
         assertEquals(test.getFoo(), "hello");
         test.setFoo("goober");
@@ -1022,7 +1019,7 @@ public class TestQuack {
     // disabled because tracking memory pointers is expensive.
 //    @Test
     public void testNativeArrayBufferSame() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject jo = quack.evaluateForJavaScriptObject("(function(cb) { var a = new ArrayBuffer(10); cb.callback(a); cb.callback(a); })");
 
         jo.call(new RoundtripCallback() {
@@ -1042,7 +1039,7 @@ public class TestQuack {
     // disabled because tracking memory pointers is expensive.
 //    @Test
     public void testNativeArrayBufferSameAndPositionResets() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject jo = quack.evaluateForJavaScriptObject("(function(cb) { var a = new ArrayBuffer(10); cb.callback(a); cb.callback(a); })");
 
         jo.call(new RoundtripCallback() {
@@ -1063,7 +1060,7 @@ public class TestQuack {
 
     @Test
     public void testArrayBufferSameFromJava() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         Object ab = quack.evaluate("(new ArrayBuffer(10))");
         JavaScriptObject jo = quack.evaluateForJavaScriptObject("var last = null; function checker(ab) { if (last != null && last != ab) throw new Error('arraybuffer mismatch'); last = ab; }; checker;");
         jo.call(ab);
@@ -1073,7 +1070,7 @@ public class TestQuack {
 
     @Test
     public void testModule() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject jo = quack.evaluateModule("import * as std from 'std';");
         // at the moment modules return null. there doesn't seem to be a way to get the exports out.
         assertNull(jo);
@@ -1082,7 +1079,7 @@ public class TestQuack {
 
     @Test
     public void testIterable() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JSValue value = quack.evaluateForJavaScriptObject("([2,3,4,5])").asJSValue();
         int total = 0;
         for (int i: value.asIterable(int.class)) {
@@ -1098,7 +1095,7 @@ public class TestQuack {
 
     @Test
     public void testArray() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         ArrayInterface iface = quack.evaluate("(function() { return [2, 3, 4, 5] })", ArrayInterface.class);
         int total = 0;
         for (int i: iface.getNumbers()) {
@@ -1110,7 +1107,7 @@ public class TestQuack {
 
     @Test
     public void testDotConstructBug() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         quack.getGlobalObject().set("global", quack.getGlobalObject());
         QuackObject Test = new QuackObject() {
             @Override
@@ -1128,7 +1125,7 @@ public class TestQuack {
 
     @Test
     public void testLong() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         JavaScriptObject jo = quack.evaluateForJavaScriptObject("(function(o){ return o; })");
         long value = 4000000000L;
         Object ret = quack.coerceJavaScriptToJava(long.class, jo.call(value));
@@ -1137,7 +1134,7 @@ public class TestQuack {
 
     @Test
     public void testTurkishCharacters() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         String str1 = quack.evaluate("\"öÖçÇşŞiİğĞüÜıI\".toUpperCase()", String.class);
         assertEquals("ÖÖÇÇŞŞIİĞĞÜÜII", str1);
 
@@ -1153,7 +1150,7 @@ public class TestQuack {
 
     @Test
     public void testTime() {
-        QuackContext quack = QuackContext.create(useQuickJS);
+        QuackContext quack = QuackContext.create();
         Integer hours = quack.evaluate("new Date().getHours()", Integer.class);
         System.out.println(hours);
         assertEquals(Calendar.getInstance().get(Calendar.HOUR_OF_DAY), hours.intValue());

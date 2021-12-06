@@ -437,21 +437,15 @@ public final class QuackContext implements Closeable {
    * Create a new interpreter instance. Calls to this method <strong>must</strong> matched with
    * calls to {@link #close()} on the returned instance to avoid leaking native memory.
    */
-  private boolean useQuickJS;
-  public static QuackContext create(boolean useQuickJS) {
-    QuackContext quack = new QuackContext(useQuickJS);
+  public static QuackContext create() {
+    QuackContext quack = new QuackContext(true);
     // context will hold a weak ref, so this doesn't matter if it fails.
-    long context = createContext(quack, useQuickJS);
+    long context = createContext(quack, true);
     if (context == 0) {
       throw new OutOfMemoryError("Cannot create QuickJS instance");
     }
     quack.context = context;
-    quack.useQuickJS = useQuickJS;
     return quack;
-  }
-
-  public static QuackContext create() {
-    return create(true);
   }
 
   private long context;

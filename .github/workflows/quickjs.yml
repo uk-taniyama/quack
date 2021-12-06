@@ -188,6 +188,6 @@ jobs:
         personal_token: ${{ secrets.GH_PAGES }}
         external_repository: uk-taniyama/maven
         publish_branch: master
-        publish_dir: ./build/maven
+        publish_dir: ./build/repository
         destination_dir: ./repository
         keep_files: true
