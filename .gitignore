@@ -26,3 +26,4 @@ bin
 .env
 *.bak
 quack-jni/src/main/resources/META-INF/quickjs.*
+node_modules/
