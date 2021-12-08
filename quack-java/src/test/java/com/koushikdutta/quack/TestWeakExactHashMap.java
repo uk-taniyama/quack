@@ -20,12 +20,10 @@ public class TestWeakExactHashMap {
         assertEquals(map.get(key), value);
         assertEquals(map.size(), 1);
 
-        System.gc();
-        System.gc();
-        System.gc();
-        System.gc();
-        System.gc();
-        System.gc();
+        for (int i = 0; i < 5; i++) {
+            System.gc();
+            try { Thread.sleep(250);} catch(InterruptedException ignore){}
+        }
 
         assertEquals(map.get(key), value);
         assertEquals(map.size(), 1);
@@ -33,6 +31,7 @@ public class TestWeakExactHashMap {
         key = null;
         while (ref.get() != null) {
             System.gc();
+            try { Thread.sleep(250);} catch(InterruptedException ignore){}
         }
         map.purge();
         assertEquals(map.size(), 0);

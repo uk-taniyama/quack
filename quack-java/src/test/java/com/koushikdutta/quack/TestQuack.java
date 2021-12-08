@@ -1,7 +1,9 @@
 package com.koushikdutta.quack;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -15,6 +17,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
@@ -23,6 +27,8 @@ import org.junit.Test;
 import static org.junit.Assume.assumeFalse;
 
 public class TestQuack {
+    protected final static Logger logger = Logger.getLogger(TestQuack.class.getName());
+
     @BeforeClass
     public static void setup() {
         QuackContext.listener = new QuackContext.DefaultListener();
@@ -1136,6 +1142,59 @@ public class TestQuack {
         long value = 4000000000L;
         Object ret = quack.coerceJavaScriptToJava(long.class, jo.call(value));
         assertEquals(value, ret);
+        quack.close();
+    }
+
+    @Test
+    public void testHeapBehavior() {
+        assumeFalse(System.getProperty("java.vm.name").equals("Dalvik"));
+    	
+        QuackContext quack = QuackContext.create();
+
+        long startHeap = quack.getHeapSize();
+        logger.log(Level.WARNING, "startHeap:"+startHeap);
+        final int allocSize = 10000000;
+        ByteBuffer directIn = ByteBuffer.allocateDirect(allocSize);
+        ByteBuffer arrayIn = ByteBuffer.allocate(allocSize);
+        String script = "function(ret) { return ret; }";
+        JavaScriptObject func = quack.compileFunction(script, "?");
+
+        ByteBuffer direct = (ByteBuffer)func.call(directIn);
+        ByteBuffer array = (ByteBuffer)func.call(arrayIn);
+
+        assertEquals(quack.getMappedNativeCount(), 2);
+        assertNotSame(directIn, direct);
+        assertNotSame(arrayIn, array);
+
+        directIn.putInt(0, 1);
+        assertEquals(1, direct.getInt(0));
+
+        arrayIn.putInt(0, 1);
+        assertNotEquals(1, array.getInt(0));
+
+        assertEquals(2, quack.getMappedNativeCount());
+
+        long beforeHeap = quack.getHeapSize();
+        logger.log(Level.WARNING, "beforeHeap:"+beforeHeap);
+
+        direct = null;
+        directIn = null;
+
+        array = null;
+        arrayIn = null;
+
+        for (int i = 0; i < 10; i++) {
+            System.gc();
+            try { Thread.sleep(250);} catch(InterruptedException ignore){}
+        }
+        int purged = quack.purgeNativeMappings();
+        quack.gc();
+
+        long afterHeap = quack.getHeapSize();
+        logger.log(Level.WARNING, "afterHeap:"+afterHeap);
+        assertTrue(beforeHeap - afterHeap >= allocSize);
+
+        assertEquals(2, purged);
         quack.close();
     }
 
