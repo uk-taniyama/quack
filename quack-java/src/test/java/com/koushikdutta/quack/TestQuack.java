@@ -18,11 +18,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assume.assumeFalse;
 
 public class TestQuack {
+    @BeforeClass
+    public static void setup() {
+        QuackContext.listener = new QuackContext.DefaultListener();
+    }
+
     // takes a long time. Duktape does not pass due to a const limit. quickjs works.
     // @Test
     public void testOctane() throws IOException {
@@ -823,6 +828,7 @@ public class TestQuack {
         TestJS2 foo = func.apply(null).as(TestJS2.class);
         assertEquals(foo.foo1(), "HI");
         assertEquals(foo.foo2(), "BYE");
+        quack.close();
     }
 
     @Test
@@ -1130,6 +1136,7 @@ public class TestQuack {
         long value = 4000000000L;
         Object ret = quack.coerceJavaScriptToJava(long.class, jo.call(value));
         assertEquals(value, ret);
+        quack.close();
     }
 
     @Test
@@ -1154,5 +1161,6 @@ public class TestQuack {
         Integer hours = quack.evaluate("new Date().getHours()", Integer.class);
         System.out.println(hours);
         assertEquals(Calendar.getInstance().get(Calendar.HOUR_OF_DAY), hours.intValue());
+        quack.close();
     }
 }

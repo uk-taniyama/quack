@@ -21,7 +21,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** A simple EMCAScript (Javascript) interpreter. */
@@ -36,13 +38,85 @@ public final class QuackContext implements Closeable {
   final Map<Method, QuackMethodCoercion> JavaScriptToJavaMethodCoercions = new LinkedHashMap<>();
   final Map<Method, QuackMethodCoercion> JavaToJavascriptMethodCoercions = new LinkedHashMap<>();
   private QuackInvocationHandlerWrapper invocationHandlerWrapper;
-  public static Throwable error = null;
+
+  protected final static Logger logger = Logger.getLogger(QuackContext.class.getName());
+
+  /**
+   * Listener of create and destroy in the QuackContext.
+   */
+  public interface Listener {
+    /**
+     * Called when the context is created.
+     */
+    void onCreate(long context, QuackContext jContext);
+
+    /**
+     * Called when the context is closed.
+     */
+    void onClose(long context, QuackContext jContext);
+
+    /**
+     * Called when the context is leaked.
+     * Leaked: when finalize is called even though close is not called.
+     */
+    void onLeaked(long context, QuackContext jContext);
+  }
+
+  /**
+   * Do nothing.
+   */
+  public static class DefaultListener implements Listener {
+    @Override
+    public void onCreate(long context, QuackContext jContext) { }
+    @Override
+    public void onClose(long context, QuackContext jContext) { }
+    @Override
+    public void onLeaked(long context, QuackContext jContext) { }
+  }
+
+  /**
+   * Simple listener.
+   */
+  public static class SimpleListener extends DefaultListener {
+    @Override
+    public void onLeaked(long context, QuackContext jContext) {
+      logger.log(Level.WARNING, "QuickJS instance leaked!");
+    }
+  }
+
+  /**
+   * Listener for debug.
+   * When a leak is detected, output the stack-trace when create is called.
+   */
+  public static class DebugListener extends DefaultListener {
+    public Map<Long, Throwable> contextToThrowable = new ConcurrentHashMap<>();
+
+    @Override
+    public void onCreate(long context, QuackContext jContext) {
+      contextToThrowable.put(context, new Throwable());
+    }
+
+    @Override
+    public void onClose(long context, QuackContext jContext) {
+      contextToThrowable.remove(context);
+    }
+
+    @Override
+    public void onLeaked(long context,QuackContext jContext) {
+      Throwable e = contextToThrowable.get(context);
+      if(e!=null) {
+        logger.log(Level.WARNING, "QuickJS instance leaked!", e);
+      }
+    }
+  }
+
+  public static Listener listener = new SimpleListener();
 
   static {
     try {
       Class.forName("com.koushikdutta.quack.QuackJniLoader");
     } catch (ClassNotFoundException e) {
-      error = e;
+      logger.log(Level.SEVERE, "initialize error", e);
     }
   }
 
@@ -445,6 +519,7 @@ public final class QuackContext implements Closeable {
       throw new OutOfMemoryError("Cannot create QuickJS instance");
     }
     quack.context = context;
+    listener.onCreate(context, quack);
     return quack;
   }
 
@@ -626,6 +701,7 @@ public final class QuackContext implements Closeable {
    * method for each instance to avoid leaking native memory.
    */
   @Override public synchronized void close() {
+    listener.onClose(context, this);
     if (context != 0) {
       long contextToClose = context;
       context = 0;
@@ -638,10 +714,10 @@ public final class QuackContext implements Closeable {
     // this isn't THAT bad, as JavaScriptObjects may be passed around without concern for the
     // QuickJS collection.
     if (context != 0) {
-      Logger.getLogger(getClass().getName()).warning("QuickJS instance leaked!");
+      listener.onLeaked(context, this);
+      // definitely close it though.
+      close();
     }
-    // definitely close it though.
-    close();
   }
 
   synchronized public JavaScriptObject getGlobalObject() {
