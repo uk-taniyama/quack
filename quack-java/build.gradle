@@ -1,36 +1,54 @@
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
+plugins {
+	id 'java-library'
+	id 'kotlin'
+	id 'com.diffplug.spotless'
+}
 
 dependencies {
-    testRuntimeOnly project(":quack-jni")
-    testImplementation "junit:junit:${versions.junit}"
-    implementation  "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}"
+	testRuntimeOnly project(":quack-jni")
+	testImplementation "junit:junit:${versions.junit}"
+	implementation  "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}"
 }
 
 java {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+	sourceCompatibility JavaVersion.VERSION_1_8
+	targetCompatibility JavaVersion.VERSION_1_8
 }
 
 compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
 }
 compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier = 'sources'
-  from sourceSets.main.java.srcDirs
+	classifier = 'sources'
+	from sourceSets.main.java.srcDirs
 }
- 
+
 // task testJar(type: Jar) {
 //     classifier = 'tests'
 //     from sourceSets.test.output
 // }
+
+spotless {
+	//	java {
+	//		googleJavaFormat()
+	//		licenseHeaderFile rootProject.file('config/license.txt')
+	//	}
+	groovyGradle {
+		target '*.gradle'
+		greclipse()
+	}
+	//	kotlin {
+	//		ktlint()
+	//		licenseHeaderFile rootProject.file('config/license.txt')
+	//	}
+}
 
 apply from: 'maven.gradle'

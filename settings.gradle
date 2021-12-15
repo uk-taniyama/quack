@@ -3,10 +3,14 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
     }
 }
 
 rootProject.name = "quack"
-include 'quack-java'
-include 'quack-android'
-include 'quack-jni'
+include ':quack-java'
+include ':quack-android'
+include ':quack-jni'
+include ':serialization'

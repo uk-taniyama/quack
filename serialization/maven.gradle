@@ -13,7 +13,7 @@ afterEvaluate {
 			relocation(MavenPublication) {
 				groupId = maven.groupId
 				version = maven.version
-				artifactId = 'quack-java'
+				artifactId = 'quack-serialization'
 
 				from components.java
 				artifact sourcesJar
