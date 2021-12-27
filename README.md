@@ -262,3 +262,4 @@ quack.evaluate(javascriptString);
 ## Square Duktape-Android
 
 Quack was initially forked from Square's Duktape Android library. But it has been totally rewritten to suit different needs.
+
