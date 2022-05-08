@@ -1,7 +1,8 @@
 package com.koushikdutta.quack;
 
 public interface QuackPromise {
-    QuackPromise then(QuackPromiseReceiver receiver);
+    QuackPromise then(QuackPromiseReceiver onFulfilled, QuackPromiseReceiver onRejected);
+    QuackPromise then(QuackPromiseReceiver onFulfilled);
     @QuackMethodName(name = "catch")
-    QuackPromise caught(QuackPromiseReceiver receiver);
+    QuackPromise caught(QuackPromiseReceiver onRejected);
 }

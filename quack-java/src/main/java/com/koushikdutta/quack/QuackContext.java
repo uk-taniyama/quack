@@ -33,8 +33,8 @@ public final class QuackContext implements Closeable {
   // ie, a js ArrayBuffer or Uint8Array value will be mapped from the java DirectByteBuffer key.
   private final WeakExactHashMap<Object, Object> nativeMappings = new WeakExactHashMap<>();
 
-  private final Map<Class, QuackCoercion> JavaScriptToJavaCoercions = new LinkedHashMap<>();
-  private final Map<Class, QuackCoercion> JavaToJavascriptCoercions = new LinkedHashMap<>();
+  final Map<Class, QuackCoercion> JavaScriptToJavaCoercions = new LinkedHashMap<>();
+  final Map<Class, QuackCoercion> JavaToJavascriptCoercions = new LinkedHashMap<>();
   final Map<Method, QuackMethodCoercion> JavaScriptToJavaMethodCoercions = new LinkedHashMap<>();
   final Map<Method, QuackMethodCoercion> JavaToJavascriptMethodCoercions = new LinkedHashMap<>();
   private QuackInvocationHandlerWrapper invocationHandlerWrapper;
@@ -254,6 +254,39 @@ public final class QuackContext implements Closeable {
     return match;
   }
 
+  public Object coerceJavaScriptToJava(Type type, Class<?> clazz, Object o) {
+    while (o instanceof QuackJavaObject) {
+      Object coerced = ((QuackJavaObject)o).getObject();;
+      if (o == coerced)
+        break;
+      o = coerced;
+    }
+
+    if (clazz == QuackFuture.class) {
+      Class argClass = null;
+      if (type instanceof ParameterizedType) {
+        Type argType = ((ParameterizedType) type).getActualTypeArguments()[0];
+        if (argType instanceof Class) {
+          // QuackFuture<String>
+          argClass = (Class) argType;
+        } else if (argType instanceof WildcardType) {
+          // QuackFuture<?>
+        } else if (argType instanceof ParameterizedType) {
+          // QuackFuture<List<String>>
+          // QuackFuture<List<?>>
+          argClass = (Class) ((ParameterizedType) argType).getRawType();
+        } else if (argType instanceof GenericArrayType) {
+          // ??? System.out.println("GenericArrayType:" + argType);
+        }
+      } else {
+        // QuackFuture
+      }
+      return QuackFuture.create(argClass, this, o);
+    }
+
+    return coerceJavaScriptToJava(clazz, o);
+  }
+
   /**
    * Coerce a JavaScript value into an equivalent Java object.
    */
@@ -323,7 +356,9 @@ public final class QuackContext implements Closeable {
       if (lambda != null) {
         return Proxy.newProxyInstance(QuackJavaScriptObject.class.getClassLoader(), new Class[]{QuackJavaScriptObject.class, clazz},
                 jo.getWrappedInvocationHandler((proxy, method, args) ->
-                        coerceJavaScriptToJava(method.getReturnType(), jo.call(JavaScriptObject.coerceArgs(this, method, args)))));
+                        coerceJavaScriptToJava(
+                                method.getGenericReturnType(), method.getReturnType(),
+                                jo.call(JavaScriptObject.coerceArgs(this, method, args)))));
       }
       else {
         InvocationHandler handler = jo.createInvocationHandler();

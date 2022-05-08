@@ -176,7 +176,7 @@ public class JavaScriptObject implements QuackObject, QuackJavaScriptObject {
             QuackProperty property = method.getAnnotation(QuackProperty.class);
             if (property != null) {
                 if (args == null || args.length == 0)
-                    return quackContext.coerceJavaScriptToJava(method.getReturnType(), JavaScriptObject.this.get(property.name()));
+                    return quackContext.coerceJavaScriptToJava(method.getGenericReturnType(), method.getReturnType(), JavaScriptObject.this.get(property.name()));
                 JavaScriptObject.this.set(property.name(), quackContext.coerceJavaScriptToJava(method.getParameterTypes()[0], args[0]));
                 return null;
             }
@@ -186,7 +186,7 @@ public class JavaScriptObject implements QuackObject, QuackJavaScriptObject {
             if (annotation != null)
                 methodName = annotation.name();
 
-            return quackContext.coerceJavaScriptToJava(method.getReturnType(), JavaScriptObject.this.callProperty(methodName, coerceArgs(quackContext, method, args)));
+            return quackContext.coerceJavaScriptToJava(method.getGenericReturnType(), method.getReturnType(), JavaScriptObject.this.callProperty(methodName, coerceArgs(quackContext, method, args)));
         };
 
         return getWrappedInvocationHandler(handler);
