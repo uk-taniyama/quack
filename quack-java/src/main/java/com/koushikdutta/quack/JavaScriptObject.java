@@ -48,6 +48,11 @@ public class JavaScriptObject implements QuackObject, QuackJavaScriptObject {
         return (String)quackContext.evaluateForJavaScriptObject("(function(f) { return typeof f; })").call(this);
     }
 
+    public boolean isInstanceof(String type) {
+        String script = "(function(f){return f instanceof " + type + "})";
+        return (Boolean) quackContext.evaluateForJavaScriptObject(script).call(this);
+    }
+
     public String stringify() {
         return quackContext.stringify(pointer);
     }

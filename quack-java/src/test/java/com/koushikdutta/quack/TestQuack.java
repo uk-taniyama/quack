@@ -1222,4 +1222,13 @@ public class TestQuack {
         assertEquals(Calendar.getInstance().get(Calendar.HOUR_OF_DAY), hours.intValue());
         quack.close();
     }
+
+    @Test
+    public void testIsInstanceof() {
+        try(QuackContext quackContext = QuackContext.create()){
+            assertTrue(quackContext.evaluateForJavaScriptObject("({a:'b'})").isInstanceof("Object"));
+            assertTrue(quackContext.evaluateForJavaScriptObject("([])").isInstanceof("Array"));
+            assertTrue(quackContext.evaluateForJavaScriptObject("(function(){})").isInstanceof("Function"));
+        }
+    }
 }
