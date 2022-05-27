@@ -32,7 +32,9 @@ public final class QuackException extends RuntimeException {
    * function, since it means the frame is in native code.
    */
   private final static Pattern STACK_TRACE_PATTERN =
-      Pattern.compile("\\s*at (\\[?)(.*?)]? \\((.*?):?(\\d+)?\\).*$");
+      Pattern.compile("\\s*at (\\[?)(.*?)]? \\((.*?):?(\\d+)?\\)$");
+  private final static Pattern STACK_TRACE_PATTERN2 =
+      Pattern.compile("\\s*at (.*?):?(\\d+)?$");
   /** Java StackTraceElements require a class name.  We don't have one in JS, so use this. */
   private final static String STACK_TRACE_CLASS_NAME = "JavaScript";
 
@@ -114,14 +116,18 @@ public final class QuackException extends RuntimeException {
 
   private static StackTraceElement toStackTraceElement(String s) {
     Matcher m = STACK_TRACE_PATTERN.matcher(s);
-    if (!m.matches()) {
-      // Nothing interesting on this line.
-      return null;
-    }
-    int line = m.group(4) != null ? Integer.parseInt(m.group(4)) : 1;
-    String className = m.group(1) == null ? STACK_TRACE_CLASS_NAME : "<javascript>";
+    if (m.matches()) {
+      int line = m.group(4) != null ? Integer.parseInt(m.group(4)) : 0;
+      String className = m.group(1) == null ? STACK_TRACE_CLASS_NAME : "<javascript>";
 
-    return new StackTraceElement(className, m.group(2), m.group(3),
-      line);
+      return new StackTraceElement(className, m.group(2), m.group(3), line);
+    }
+    m = STACK_TRACE_PATTERN2.matcher(s);
+    if (m.matches()) {
+      int line = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
+      return new StackTraceElement(STACK_TRACE_CLASS_NAME, "*", m.group(1), line);
+    }
+    // Nothing interesting on this line.
+    return null;
   }
 }
