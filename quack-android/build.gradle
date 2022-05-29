@@ -11,6 +11,7 @@ android {
   dependencies {
     implementation project(':quack-java')
     testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.skyscreamer:jsonassert:1.5.0"
     androidTestImplementation 'com.android.support.test:runner:1.4.0'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.4.0'
   }
