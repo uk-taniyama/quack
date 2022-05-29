@@ -14,6 +14,7 @@ android {
     testImplementation "org.skyscreamer:jsonassert:1.5.0"
     androidTestImplementation 'com.android.support.test:runner:1.4.0'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation "org.skyscreamer:jsonassert:1.5.0"
   }
 
   compileOptions {
