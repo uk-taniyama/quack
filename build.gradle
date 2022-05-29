@@ -12,7 +12,7 @@ buildscript {
         maven = [
             url: file('build/repository').absolutePath,
             groupId: 'com.github.uk-taniyama.quack',
-            version: '1.0.1-SNAPSHOT',
+            version: '1.0.2-SNAPSHOT',
         ]
         versions = [
             code: 1,
@@ -20,7 +20,7 @@ buildscript {
             kotlin: "1.6.0",
             androidGradle: "7.0.3",
             junit: "4.13.2",
-            serialization: "1.3.1",
+            serialization: "1.3.3",
             spotless: "6.0.4",
         ]
     }
