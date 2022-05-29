@@ -37,7 +37,8 @@ public class QuackExceptionTest extends TestCase {
                 StackTraceElement stockTrace = e.getStackTrace()[0];
                 assertEquals("<javascript>", stockTrace.getClassName());
                 assertEquals("<eval>", stockTrace.getMethodName());
-                assertEquals(1, stockTrace.getLineNumber());
+                // assertEquals(1, stockTrace.getLineNumber());
+                assertEquals(0, stockTrace.getLineNumber());
                 assertEquals("?", stockTrace.getFileName());
             }
         }

@@ -2,7 +2,9 @@ package com.koushikdutta.quack;
 
 import static org.junit.Assert.*;
 
+import org.json.JSONException;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,6 +13,15 @@ import java.util.List;
 import java.util.Map;
 
 public class QuackCoercionsTest {
+    public static void assertEqualsJSON(String expected, Object actual) {
+        try {
+            assertTrue(actual instanceof String);
+            JSONAssert.assertEquals(expected, actual.toString(), true);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testJavaScriptToJava() {
         try (QuackContext quackContext = QuackContext.create()) {
@@ -65,7 +76,7 @@ public class QuackCoercionsTest {
             arg.put("map", map);
             arg.put("str", "S");
 
-            assertEquals("{\"str\":\"S\",\"array\":[10,\"X\"],\"list\":[10,\"X\"],\"map\":{\"b\":\"B\"}}", fn.call(arg));
+            assertEqualsJSON("{\"str\":\"S\",\"array\":[10,\"X\"],\"list\":[10,\"X\"],\"map\":{\"b\":\"B\"}}", fn.call(arg));
         }
     }
 
@@ -99,8 +110,7 @@ public class QuackCoercionsTest {
 
             QuackCoercions.putFromMap(quackContext);
 
-            Object str2 = fn.call(map);
-            assertEquals("{\"A\":\"a\",\"B\":\"b\"}", str2);
+            assertEqualsJSON( "{\"A\":\"a\",\"B\":\"b\"}", fn.call(map));
         }
     }
 
