@@ -134,48 +134,33 @@ jobs:
     environment:
       name: actions
     steps:
-    - uses: actions/checkout@v2
-    - name: Get Run ID
-      id: get_run_id
-      run: |
-        echo "::set-output name=run_id::$(\
-          gh run list \
-            --workflow myget-pack.yml \
-            --json conclusion,headSha,status,databaseId \
-            --jq ".[] | select( .conclusion == \"success\" and .headSha == \"${{github.sha}}\") | .databaseId" \
-        )"
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
     - name: Download windows library
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: quickjs.yml
         branch: master
-        event: push
+        # event: push
         search_artifacts: true
         name: quickjs-windows
         path: quack-jni/src/main/resources/META-INF/
-        run_id: ${{steps.get_run_id.outputs.run_id}}
     - name: Download linux library
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: quickjs.yml
         branch: master
-        event: push
+        # event: push
         search_artifacts: true
         name: quickjs-linux
         path: quack-jni/src/main/resources/META-INF/
-        run_id: ${{steps.get_run_id.outputs.run_id}}
     - name: Download macos library
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: quickjs.yml
         branch: master
-        event: push
+        # event: push
         search_artifacts: true
         name: quickjs-macos
         path: quack-jni/src/main/resources/META-INF/
-        run_id: ${{steps.get_run_id.outputs.run_id}}
     - name: Download android Assemble
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -185,7 +170,6 @@ jobs:
         search_artifacts: true
         name: quickjs-android
         path: build/
-        run_id: ${{steps.get_run_id.outputs.run_id}}
     - name: Extract android Assemble
       run: tar xvfz build/android.tar.gz
     - uses: actions/setup-java@v2
