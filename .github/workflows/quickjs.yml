@@ -134,6 +134,11 @@ jobs:
     environment:
       name: actions
     steps:
+    - name: Download Archive library
+      uses: actions/download-artifact@v3
+      with:
+        name: quickjs-windows
+        path: quack-jni/src/main/resources/META-INF/quickjs.dll
     - name: Download windows library
       uses: dawidd6/action-download-artifact@v2
       with:
