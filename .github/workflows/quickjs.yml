@@ -30,7 +30,7 @@ jobs:
       run: sh native/build.sh
     - name: Test
       shell: msys2 {0}
-      run: sh gradlew quack-java:test serialization:test
+      run: sh gradlew --no-daemon quack-java:test serialization:test
     - name: Archive library
       uses: actions/upload-artifact@v2
       with:
@@ -53,7 +53,7 @@ jobs:
     - name: Build
       run: sh native/build.sh
     - name: Test
-      run: sh gradlew quack-java:test serialization:test
+      run: sh gradlew --no-daemon quack-java:test serialization:test
     - name: Archive library
       uses: actions/upload-artifact@v2
       with:
@@ -77,7 +77,7 @@ jobs:
     - name: Build
       run: bash native/build.sh
     - name: Test
-      run: sh gradlew quack-java:test serialization:test
+      run: sh gradlew --no-daemon quack-java:test serialization:test
     - name: Archive library
       uses: actions/upload-artifact@v2
       with:
