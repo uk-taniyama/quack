@@ -140,7 +140,7 @@ jobs:
         name: quickjs-windows
         path: quack-jni/src/main/resources/META-INF/quickjs.dll
     - name: Download windows library
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v2.16.0
       with:
         workflow: quickjs.yml
         branch: master
