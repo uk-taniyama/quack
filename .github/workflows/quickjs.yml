@@ -135,10 +135,13 @@ jobs:
       name: actions
     steps:
     - uses: actions/checkout@v2
-    - name: TEST
-      run: pwd
-    - name: TEST
-      run: ls -l
+    - uses: actions/setup-java@v2
+      with:
+        distribution: temurin
+        java-version: 11
+        java-package: jdk
+        architecture: x64
+        cache: gradle
     - name: Download artifact
       run: sh CI/download_artifact.sh
       env:
@@ -186,13 +189,6 @@ jobs:
     #     path: build/
     - name: Extract android Assemble
       run: tar xvfz build/android.tar.gz
-    - uses: actions/setup-java@v2
-      with:
-        distribution: temurin
-        java-version: 11
-        java-package: jdk
-        architecture: x64
-        cache: gradle
     - name: Publish
       run: sh gradlew publish
     - name: Deploy
