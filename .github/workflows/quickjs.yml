@@ -134,47 +134,51 @@ jobs:
     environment:
       name: actions
     steps:
+    - name: Download artifact
+      run: sh .github/workflows/download_artifact.sh
+      env:
+        GH_TOKEN: ${{ github.token }}
     # - name: Download Archive library
     #   uses: actions/download-artifact@v3
     #   with:
     #     name: quickjs-windows
     #     path: quack-jni/src/main/resources/META-INF/quickjs.dll
-    - name: Download windows library
-      uses: dawidd6/action-download-artifact@v2.16.0
-      with:
-        workflow: quickjs.yml
-        branch: master
-        # event: push
-        search_artifacts: true
-        name: quickjs-windows
-        path: quack-jni/src/main/resources/META-INF/
-    - name: Download linux library
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: quickjs.yml
-        branch: master
-        # event: push
-        search_artifacts: true
-        name: quickjs-linux
-        path: quack-jni/src/main/resources/META-INF/
-    - name: Download macos library
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: quickjs.yml
-        branch: master
-        # event: push
-        search_artifacts: true
-        name: quickjs-macos
-        path: quack-jni/src/main/resources/META-INF/
-    - name: Download android Assemble
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: quickjs.yml
-        branch: master
-        event: push
-        search_artifacts: true
-        name: quickjs-android
-        path: build/
+    # - name: Download windows library
+    #   uses: dawidd6/action-download-artifact@v2.16.0
+    #   with:
+    #     workflow: quickjs.yml
+    #     branch: master
+    #     # event: push
+    #     search_artifacts: true
+    #     name: quickjs-windows
+    #     path: quack-jni/src/main/resources/META-INF/
+    # - name: Download linux library
+    #   uses: dawidd6/action-download-artifact@v2
+    #   with:
+    #     workflow: quickjs.yml
+    #     branch: master
+    #     # event: push
+    #     search_artifacts: true
+    #     name: quickjs-linux
+    #     path: quack-jni/src/main/resources/META-INF/
+    # - name: Download macos library
+    #   uses: dawidd6/action-download-artifact@v2
+    #   with:
+    #     workflow: quickjs.yml
+    #     branch: master
+    #     # event: push
+    #     search_artifacts: true
+    #     name: quickjs-macos
+    #     path: quack-jni/src/main/resources/META-INF/
+    # - name: Download android Assemble
+    #   uses: dawidd6/action-download-artifact@v2
+    #   with:
+    #     workflow: quickjs.yml
+    #     branch: master
+    #     event: push
+    #     search_artifacts: true
+    #     name: quickjs-android
+    #     path: build/
     - name: Extract android Assemble
       run: tar xvfz build/android.tar.gz
     - uses: actions/setup-java@v2
