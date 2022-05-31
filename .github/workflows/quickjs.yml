@@ -134,8 +134,12 @@ jobs:
     environment:
       name: actions
     steps:
+    - name: TEST
+      run: pwd
+    - name: TEST
+      run: ls -l
     - name: Download artifact
-      run: sh .github/workflows/download_artifact.sh
+      run: sh CI/download_artifact.sh
       env:
         GH_TOKEN: ${{ github.token }}
     # - name: Download Archive library
