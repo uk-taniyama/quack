@@ -134,6 +134,7 @@ jobs:
     environment:
       name: actions
     steps:
+    - uses: actions/checkout@v2
     - name: TEST
       run: pwd
     - name: TEST
