@@ -1,5 +1,5 @@
 set -x
-if [ ! "$GH_TOKEN"]
+if [ ! "$GH_TOKEN" ]
 then
     exit -1
 fi

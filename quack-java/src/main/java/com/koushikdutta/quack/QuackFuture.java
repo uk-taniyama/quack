@@ -9,7 +9,7 @@ public class QuackFuture<T> {
     private final Class<T> clazz;
     private final Semaphore semaphore = new Semaphore(0);
     private Object data = null;
-    private QuackException error = null;
+    private Exception error = null;
 
     private QuackFuture(Class<T> clazz, QuackContext quackContext) {
         this.clazz = clazz;
@@ -42,11 +42,15 @@ public class QuackFuture<T> {
     }
 
     private void setError(Object error) {
-        try {
-            // rethrow
-            quackContext.evaluateForJavaScriptObject("(function(e){throw e})").call(error);
-        } catch (QuackException e) {
-            this.error = e;
+        if (error instanceof JavaScriptObject) {
+            try {
+                // rethrow
+                quackContext.evaluateForJavaScriptObject("(function(e){throw e})").call(error);
+            } catch(Exception e) {
+                this.error = e;
+            }
+        } else if(error instanceof Exception) {
+            this.error = (Exception) error;
         }
         semaphore.release();
     }
@@ -66,7 +70,13 @@ public class QuackFuture<T> {
     @SuppressWarnings("unchecked")
     <U> U getRaw(Class<U> clazz) throws QuackException {
         if (error != null) {
-            throw error;
+            if (error instanceof QuackException) {
+                throw (QuackException) error;
+            }
+            if (error instanceof RuntimeException) {
+                throw (RuntimeException) error;
+            }
+            throw new RuntimeException(error);
         }
         return (U) quackContext.coerceJavaScriptToJava(clazz, data);
     }
@@ -78,6 +88,10 @@ public class QuackFuture<T> {
 
     public T get() throws QuackException, InterruptedException {
         return get(clazz);
+    }
+
+    public void join() throws QuackException, InterruptedException {
+        get();
     }
 
     public <U> U tryGet(Class<U> clazz) throws QuackException, TimeoutException {

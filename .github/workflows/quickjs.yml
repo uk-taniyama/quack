@@ -188,7 +188,7 @@ jobs:
     #     name: quickjs-android
     #     path: build/
     - name: Extract android Assemble
-      run: tar xvfz build/android.tar.gz
+      run: tar xfz build/android.tar.gz
     - name: Publish
       run: sh gradlew publish
     - name: Deploy

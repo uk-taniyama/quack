@@ -1,6 +1,9 @@
 package com.koushikdutta.quack;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.json.JSONException;
 import org.junit.Test;
@@ -110,7 +113,7 @@ public class QuackCoercionsTest {
 
             QuackCoercions.putFromMap(quackContext);
 
-            assertEqualsJSON( "{\"A\":\"a\",\"B\":\"b\"}", fn.call(map));
+            assertEqualsJSON("{\"A\":\"a\",\"B\":\"b\"}", fn.call(map));
         }
     }
 
@@ -185,6 +188,32 @@ public class QuackCoercionsTest {
             List resultListUnknown = asyncMethods.methodListUnknown().get();
             assertEquals(1, resultListUnknown.size());
             assertEquals("string", resultListUnknown.get(0));
+        }
+    }
+
+    class JavaObj {
+        public void method(int params) {
+        }
+    }
+
+    @Test
+    public void testQuackFutureError() throws InterruptedException {
+        try (QuackContext quackContext = QuackContext.create()) {
+            QuackCoercions.putToList(quackContext);
+
+            quackContext.getGlobalObject().set("javaObj", new JavaObj());
+            String script = STR(
+                    "({",
+                    "method: async () => {",
+                    "  javaObj.method('abc')",
+                    "},",
+                    "})");
+            AsyncMethods0 asyncMethods = quackContext.evaluate(script, AsyncMethods0.class);
+            try {
+                asyncMethods.method().get();
+                fail();
+            } catch (NumberFormatException e) {
+            }
         }
     }
 
