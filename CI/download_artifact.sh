@@ -18,7 +18,7 @@ download() {
     path=$2
     url=`cat artifacts.json | jq -r "[.artifacts[] | select(.name==\"$name\")][0].archive_download_url"`
     curl -s -L -H "Authorization: token ${GH_TOKEN}" $url -o work.zip
-    ls work.zip
+    ls -l work.zip
     mkdir -p $path
     unzip work.zip -d $path
 }
