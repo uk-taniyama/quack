@@ -12,13 +12,13 @@ curl -s \
     -H "Authorization: token ${GH_TOKEN}" \
     "https://api.github.com/repos/${OWNER}/${REPOSITORY}/actions/artifacts" \
     > artifacts.json
-cat artifacts.json
 
 download() {
     name=$1
     path=$2
     url=`cat artifacts.json | jq -r "[.artifacts[] | select(.name==\"$name\")][0].archive_download_url"`
-    curl -s -L -H "Authorization: token ${GH_TOKEN}" $url > work.zip
+    curl -s -L -H "Authorization: token ${GH_TOKEN}" $url -o work.zip
+    ls work.zip
     mkdir -p $path
     unzip work.zip -d $path
 }
