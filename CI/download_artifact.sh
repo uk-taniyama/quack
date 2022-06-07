@@ -12,6 +12,7 @@ curl -s \
     -H "Authorization: token ${GH_TOKEN}" \
     "https://api.github.com/repos/${OWNER}/${REPOSITORY}/actions/artifacts" \
     > artifacts.json
+cat artifacts.json
 
 download() {
     name=$1
